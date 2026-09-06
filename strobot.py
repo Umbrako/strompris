@@ -3,7 +3,7 @@ import json
 import os
 from datetime import datetime
 
-TOKEN = ""
+TOKEN = os.getenv("TOKEN")
 
 KANAL_NAVN = "🪙-cryptopris"
 ROLLE_NAVN = "Crypto"
