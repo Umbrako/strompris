@@ -76,7 +76,7 @@ class PrisKnapp(discord.ui.Button):
         )
         self.pris = pris
 
-    async def callback(self, interaction: discord.Interaction):
+async def callback(self, interaction: discord.Interaction):
 
     # Svar på Discord-knappen med en gang
     await interaction.response.defer()
