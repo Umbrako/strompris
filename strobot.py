@@ -82,7 +82,7 @@ class PrisKnapp(discord.ui.Button):
         ny_pris = self.pris
 
         data["pris"] = ny_pris
-        data["sist_oppdatert"] = datetime.now().strftime("%d.%m.%Y %H:%M")
+        data["sist_oppdatert"] = datetime.now(ZoneInfo("Europe/Oslo")).strftime("%d.%m.%Y %H:%M")
         data["melding_id"] = data.get("melding_id")
 
         lagre_data(data)
