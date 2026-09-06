@@ -78,61 +78,68 @@ class PrisKnapp(discord.ui.Button):
 
     async def callback(self, interaction: discord.Interaction):
 
-        data = hent_data()
+    # Svar på Discord-knappen med en gang
+    await interaction.response.defer()
 
-        gammel_pris = data.get("pris")
-        ny_pris = self.pris
+    data = hent_data()
 
-        data["pris"] = ny_pris
-        data["sist_oppdatert"] = datetime.now(ZoneInfo("Europe/Oslo")).strftime("%d.%m.%Y %H:%M")
-        data["melding_id"] = data.get("melding_id")
+    gammel_pris = data.get("pris")
+    ny_pris = self.pris
 
-        lagre_data(data)
+    data["pris"] = ny_pris
+    data["sist_oppdatert"] = datetime.now(
+        ZoneInfo("Europe/Oslo")
+    ).strftime("%d.%m.%Y %H:%M")
+    data["melding_id"] = data.get("melding_id")
 
-        kanal = interaction.channel
+    lagre_data(data)
 
-        # Oppdater den faste meldingen
-        if data.get("melding_id"):
-            try:
-                melding = await kanal.fetch_message(
-                    int(data["melding_id"])
-                )
+    kanal = interaction.channel
 
-                await melding.edit(
-                    content=(
-                        "⚡ **STRØMPRIS**\n\n"
-                        f"**{PRISER[ny_pris]}**\n\n"
-                        f"Sist oppdatert: "
-                        f"{data['sist_oppdatert']}\n\n"
-                        "Trykk på knappen under for å oppdatere."
-                    ),
-                    view=PrisView()
-                )
-
-            except discord.NotFound:
-                pass
-
-        await interaction.response.edit_message(
-            content=f"⚡ Strømprisen er oppdatert til **{PRISER[ny_pris]}**.",
-            view=None
-        )
-
-        # Bare tagg hvis prisen faktisk har endret seg
-        if gammel_pris != ny_pris:
-
-            rolle = discord.utils.get(
-                interaction.guild.roles,
-                name=ROLLE_NAVN
+    # Oppdater den faste meldingen
+    if data.get("melding_id"):
+        try:
+            melding = await kanal.fetch_message(
+                int(data["melding_id"])
             )
 
-            if rolle:
-                await kanal.send(
-                    f"{rolle.mention} ⚡ **Strømprisen har endret seg!**\n"
-                    f"Ny pris: **{PRISER[ny_pris]}**",
-                    allowed_mentions=discord.AllowedMentions(
-                        roles=True
-                    )
+            await melding.edit(
+                content=(
+                    "⚡ **STRØMPRIS**\n\n"
+                    f"**{PRISER[ny_pris]}**\n\n"
+                    f"Sist oppdatert: "
+                    f"{data['sist_oppdatert']}\n\n"
+                    "Trykk på knappen under for å oppdatere."
+                ),
+                view=PrisView()
+            )
+
+        except discord.NotFound:
+            pass
+
+    # Bekreft oppdateringen
+    await interaction.followup.edit_message(
+        interaction.message.id,
+        content=f"⚡ Strømprisen er oppdatert til **{PRISER[ny_pris]}**.",
+        view=None
+    )
+
+    # Bare tagg hvis prisen faktisk har endret seg
+    if gammel_pris != ny_pris:
+
+        rolle = discord.utils.get(
+            interaction.guild.roles,
+            name=ROLLE_NAVN
+        )
+
+        if rolle:
+            await kanal.send(
+                f"{rolle.mention} ⚡ **Strømprisen har endret seg!**\n"
+                f"Ny pris: **{PRISER[ny_pris]}**",
+                allowed_mentions=discord.AllowedMentions(
+                    roles=True
                 )
+            )
 
 
 @client.event
